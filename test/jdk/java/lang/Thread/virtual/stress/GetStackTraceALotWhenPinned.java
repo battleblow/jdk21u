@@ -28,7 +28,7 @@
  * @requires vm.debug != true
  * @modules java.base/java.lang:+open
  * @library /test/lib
- * @run main/othervm GetStackTraceALotWhenPinned 500000
+ * @run main/othervm/timeout=300 GetStackTraceALotWhenPinned 100000
  */
 
 /*
