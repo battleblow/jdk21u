@@ -739,7 +739,7 @@ bool DwarfFile::DebugAranges::find_compilation_unit_offset(const uint32_t offset
     }
   }
 
-  assert(false, "No address descriptor found containing offset_in_library.");
+  DWARF_LOG_INFO("No address descriptor found containing offset_in_library.");
   return false;
 }
 
