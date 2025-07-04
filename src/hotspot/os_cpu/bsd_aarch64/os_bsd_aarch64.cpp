@@ -195,7 +195,16 @@ frame os::fetch_compiled_frame_from_context(const void* ucVoid) {
 
 // JVM compiled with -fno-omit-frame-pointer, so RFP is saved on the stack.
 frame os::get_sender_for_C_frame(frame* fr) {
+#ifdef __FreeBSD__
+  address pc = fr->sender_pc();
+  CodeBlob* cb = CodeCache::find_blob(pc);
+  bool use_codeblob = cb != nullptr && cb->frame_size() > 0;
+  assert(!use_codeblob || !Interpreter::contains(pc), "should not be an interpreter frame");
+  intptr_t* sender_sp = use_codeblob ? (fr->link() + frame::metadata_words - cb->frame_size()) : fr->link();
+  return frame(sender_sp, sender_sp, fr->link(), pc, cb, true /* allow_cb_null */);
+#else
   return frame(fr->sender_sp(), fr->link(), fr->sender_pc());
+#endif
 }
 
 NOINLINE frame os::current_frame() {
