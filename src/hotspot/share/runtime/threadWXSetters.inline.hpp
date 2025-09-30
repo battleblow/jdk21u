@@ -46,7 +46,7 @@ public:
     }
   }
 };
-#elif defined(AARCH64)
+#elif defined(_BSDONLY_SOURCE) && defined(AARCH64)
 class ThreadWXEnable  {
   WXMode _new_mode;
 public:
