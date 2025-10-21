@@ -209,6 +209,13 @@ endif
 
 ################################################################################
 # Create system lookup
+# The BSDLIBC depenency on OpenBSD is needed to access libc symbols. On OpenBSD
+# libc is not added by default to shared libraries.
+################################################################################
+
+ifeq ($(OPENJDK_TARGET_OS_ENV), bsd.openbsd)
+  BSDLIBC= -lc
+endif
 
 $(eval $(call SetupJdkLibrary, BUILD_SYSLOOKUPLIB, \
     NAME := syslookup, \
@@ -216,8 +223,10 @@ $(eval $(call SetupJdkLibrary, BUILD_SYSLOOKUPLIB, \
     CXXFLAGS := $(CXXFLAGS_JDKLIB), \
     LDFLAGS := $(LDFLAGS_JDKLIB), \
     LDFLAGS_linux := -Wl$(COMMA)--no-as-needed, \
+    LDFLAGS_bsd := -Wl$(COMMA)--no-as-needed, \
     LIBS := $(LIBCXX), \
     LIBS_linux := -lc -lm -ldl, \
+    LIBS_bsd := $(LIBDL) $(LIBM) $(BSDLIBC), \
 ))
 
 TARGETS += $(BUILD_SYSLOOKUPLIB)
