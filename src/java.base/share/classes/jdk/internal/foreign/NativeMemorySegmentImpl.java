@@ -122,7 +122,7 @@ public sealed class NativeMemorySegmentImpl extends AbstractMemorySegmentImpl pe
         }
         long alignedSize = Math.max(1L, byteAlignment > MAX_MALLOC_ALIGN ?
                 byteSize + (byteAlignment - 1) :
-                byteSize);
+                Math.max(byteSize, byteAlignment));
 
         NIO_ACCESS.reserveMemory(alignedSize, byteSize);
 
