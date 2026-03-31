@@ -7109,7 +7109,7 @@ class StubGenerator: public StubCodeGenerator {
     return start;
   }
 
-#if (defined (LINUX) && !defined (__ARM_FEATURE_ATOMICS)) || defined(_BSDONLY_SOURCE)
+#if (defined (LINUX) || defined(_BSDONLY_SOURCE)) && !defined (__ARM_FEATURE_ATOMICS)
 
   // ARMv8.1 LSE versions of the atomic stubs used by Atomic::PlatformXX.
   //
@@ -8737,11 +8737,11 @@ class StubGenerator: public StubCodeGenerator {
       StubRoutines::_poly1305_processBlocks = generate_poly1305_processBlocks();
     }
 
-#if defined (LINUX) && !defined (__ARM_FEATURE_ATOMICS)
+#if (defined (LINUX) || defined(_BSDONLY_SOURCE)) && !defined (__ARM_FEATURE_ATOMICS)
 
     generate_atomic_entry_points();
 
-#endif // LINUX
+#endif // LINUX || _BSDONLY_SOURCE
 
     if (UseSecondarySupersTable) {
       StubRoutines::_lookup_secondary_supers_table_slow_path_stub = generate_lookup_secondary_supers_table_slow_path_stub();
