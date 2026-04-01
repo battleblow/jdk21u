@@ -195,7 +195,7 @@ frame os::fetch_compiled_frame_from_context(const void* ucVoid) {
 
 // JVM compiled with -fno-omit-frame-pointer, so RFP is saved on the stack.
 frame os::get_sender_for_C_frame(frame* fr) {
-#ifdef __FreeBSD__
+#if !defined(__APPLE__)
   address pc = fr->sender_pc();
   CodeBlob* cb = CodeCache::find_blob(pc);
   bool use_codeblob = cb != nullptr && cb->frame_size() > 0;
