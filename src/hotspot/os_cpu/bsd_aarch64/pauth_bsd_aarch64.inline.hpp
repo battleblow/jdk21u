@@ -28,20 +28,64 @@
 // OS specific Support for ROP Protection in VM code.
 // For more details on PAC see pauth_aarch64.hpp.
 
+#ifdef __OpenBSD__
+inline bool pauth_ptr_is_raw(address ptr);
+
+// Write these instructions using their alternate "hint" instructions to
+// ensure older compilers can still be used.
+#define XPACLRI "hint #0x7;"
+#define PACIAZ  "hint #0x18;"
+#define AUTIAZ  "hint #0x1c;"
+#endif
+
+// Strip an address. Use with caution -
+// only if there is no guaranteed way of authenticating the value.
+//
 inline address pauth_strip_pointer(address ptr) {
-  // No PAC support in BSD as of yet.
+#ifdef __OpenBSD__
+  register address result __asm__("x30") = ptr;
+  asm (XPACLRI : "+r"(result));
+  return result;
+#else
   return ptr;
+#endif // OpenBSD
 }
 
+// Sign a return value, using value zero as the modifier.
+//
 inline address pauth_sign_return_address(address ret_addr) {
-  // No PAC support in BSD as of yet.
+#ifdef __OpenBSD__
+  if (VM_Version::use_rop_protection()) {
+    // A pointer cannot be double signed.
+    guarantee(pauth_ptr_is_raw(ret_addr), "Return address is already signed");
+    register address reg30 __asm__("x30") = ret_addr;
+    asm (PACIAZ : "+r"(reg30));
+    ret_addr = reg30;
+  }
+#endif
   return ret_addr;
 }
 
+// Authenticate a return value, using value zero as the modifier.
+//
 inline address pauth_authenticate_return_address(address ret_addr) {
-  // No PAC support in BSD as of yet.
+#ifdef __OpenBSD__
+  if (VM_Version::use_rop_protection()) {
+    register address reg30 __asm__("x30") = ret_addr;
+    asm (AUTIAZ : "+r"(reg30));
+    ret_addr = reg30;
+    // Ensure that the pointer authenticated.
+    guarantee(pauth_ptr_is_raw(ret_addr),
+              "Return address did not authenticate");
+  }
+#endif
   return ret_addr;
 }
+
+#ifdef __OpenBSD__
+#undef XPACLRI
+#undef PACIAZ
+#undef AUTIAZ
+#endif
 
 #endif // OS_CPU_BSD_AARCH64_PAUTH_BSD_AARCH64_INLINE_HPP
-
